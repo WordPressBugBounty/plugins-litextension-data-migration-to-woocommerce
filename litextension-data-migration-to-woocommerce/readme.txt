@@ -2,7 +2,7 @@
 Contributors: litexten
 Tags: shopping cart data migration, magento to woocommerce, opencart to woocommerce, prestashop to woocommerce, shopify to woocommerce
 Requires at least: 3.0
-Tested up to: 6.5
+Tested up to: 6.7.1
 Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
