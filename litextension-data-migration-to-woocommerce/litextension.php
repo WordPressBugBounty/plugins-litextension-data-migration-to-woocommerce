@@ -3,7 +3,7 @@
  * Plugin Name:       LitExtension: Shopping Carts to WooCommerce
  * Plugin URI:        https://litextension.com/
  * Description:       Litextension
- * Version:           1.2.2
+ * Version:           1.2.3
  * Author:            Litextension
  * Author URI:        https://litextension.com
  * Text Domain:       lit-litextension
