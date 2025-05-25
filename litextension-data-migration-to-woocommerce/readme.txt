@@ -1,6 +1,6 @@
 === LitExtension: WooCommerce Migration Plugin ===
 Contributors: litexten
-Tags: shopping cart data migration, magento to woocommerce, opencart to woocommerce, prestashop to woocommerce, shopify to woocommerce
+Tags: shopping cart data migration, magento to woocommerce, opencart to woocommerce, prestashop to woocommerce, shopify to woocommerce, woocommerce import, woocommerce migration, wordpress import, wordpress migration
 Requires at least: 3.0
 Tested up to: 6.7.1
 Stable tag: 1.2.0
@@ -18,33 +18,40 @@ The #1 data migration solution for WooCommerce. Simple and robust. 100% uptime. 
 
 ### How to Migrate to WooCommerce in 3 Simple Steps?
 
-**Step 1: Install the LitExtension Store Migration Plugin:** Download our app and enter the required details for your Source store and Target store. 
-**Step 2: Select Data to Migrate:** Choose the entities you want to transfer, such as products ,customers, and orders. You can also customize your WooCommerce migration with  LitExtension additional options to suit your specific needs.
-**Step 3: Start Your Migration:** The entire process runs automatically, with clear, step-by-step guidance provided in the app to ensure a smooth transition.
+* **Step 1: Install the LitExtension Store Migration Plugin:**
+Download our app and enter the required details for your Source store and Target store. 
+
+* **Step 2: Select Data to Migrate:**
+Choose the entities you want to transfer, such as products ,customers, and orders. You can also customize your WooCommerce migration with  LitExtension additional options to suit your specific needs.
+
+* **Step 3: Start Your Migration:**
+The entire process runs automatically, with clear, step-by-step guidance provided in the app to ensure a smooth transition.
 
 ### What Data Can Be Migrated to WooCommerce with LitExtension? 
 
-**- Products:** Products; Name, SKU, Short Description, Full Description, Status; Manufacturer, Product Tags, Tax Class; Price, Special Price, Quantity, Manage Stock, Weight, Width, Height, Depth; Meta Title, Meta Description; Up-sells, Cross-sells; Attributes: Name, Values; Grouped Products: Associated Products; Variants: Name, SKU, Weight, Quantity, Manage Stock, Image, Price, Special Price; Thumbnail Image, Additional Images.
-**- Product Categories:** Name, Description, Image, Meta Title, Meta Description.
-**- Customers:** First Name, Last Name, Email, username; Billing Address; Password, Created Date.
-**- Orders:** Order Number, Order Date, Order Status; Order Items (Name, SKU, Option), Product Price, Quantity; Sub Price, Discount Price, Tax Price, Shipping Price, Total Price; Order Comments; Customer Name, Email; Billing Address, Shipping Address.
-**- Manufactures:** Name, Image, Slug, Description. 
-**- Taxes:** Tax Class (Name), Tax rate (Country, Rate).
-**- Coupons:** Name, Title, Description; Coupon Code, Coupon Date; Uses Per Coupon, Uses Per Customer; Discount Amount/Percent; Coupon from date, Coupon to date; Status.
-**- Reviews:** Created Date, Status, Rate, User Name, User Email, Comment.
-**- CMS Pages:** Name, Created Date, URL, Description, Categories, Thumbnail Image.
-**- Blogs:** Title, Created Date, Description, Categories, Thumbnail Image.
-**- Multiple Languages:** Products (Name, Description, Attribute); Categories (Name, Description); CMS Page (Name, Description); Blogs (Name, Description).
+* **Products:** Products; Name, SKU, Short Description, Full Description, Status; Manufacturer, Product Tags, Tax Class; Price, Special Price, Quantity, Manage Stock, Weight, Width, Height, Depth; Meta Title, Meta Description; Up-sells, Cross-sells; Attributes: Name, Values; Grouped Products: Associated Products; Variants: Name, SKU, Weight, Quantity, Manage Stock, Image, Price, Special Price; Thumbnail Image, Additional Images.
+* **Product Categories:** Name, Description, Image, Meta Title, Meta Description.
+* **Customers:** First Name, Last Name, Email, username; Billing Address; Password, Created Date.
+* **Orders:** Order Number, Order Date, Order Status; Order Items (Name, SKU, Option), Product Price, Quantity; Sub Price, Discount Price, Tax Price, Shipping Price, Total Price; Order Comments; Customer Name, Email; Billing Address, Shipping Address.
+* **Manufactures:** Name, Image, Slug, Description. 
+* **Taxes:** Tax Class (Name), Tax rate (Country, Rate).
+* **Coupons:** Name, Title, Description; Coupon Code, Coupon Date; Uses Per Coupon, Uses Per Customer; Discount Amount/Percent; Coupon from date, Coupon to date; Status.
+* **Reviews:** Created Date, Status, Rate, User Name, User Email, Comment.
+* **CMS Pages:** Name, Created Date, URL, Description, Categories, Thumbnail Image.
+* **Blogs:** Title, Created Date, Description, Categories, Thumbnail Image.
+* **Multiple Languages:** Products (Name, Description, Attribute); Categories (Name, Description); CMS Page (Name, Description); Blogs (Name, Description).
 
 ### Extend Your WooCommerce Migration with LitExtension
 
 Choose from a range of additional options to make your WooCommerce migration even more comprehensive:
-- Clear Data on WooCommerce Before Migration 
-- Preserve Order IDs on WooCommerce store
-- Strip HTML Tags from Category and Product Names
-- Create 301 Redirects for seamless SEO transitions
-- Migrate Images from Products, Categories, and Blog Descriptions
-- Migrate Customer Passwords securely to WooCommerce.
+
+* Clear Data on WooCommerce Before Migration 
+* Preserve Order IDs on WooCommerce store
+* Strip HTML Tags from Category and Product Names
+* Create 301 Redirects for seamless SEO transitions
+* Migrate Images from Products, Categories, and Blog Descriptions
+* Migrate Customer Passwords securely to WooCommerce.
+
 Need something else? Contact us for more WooCommerce migration customization requests.
 
 ### Flexible Pricing Plans Tailored to Your WooCommerce Migration
@@ -53,10 +60,9 @@ Test our service with confidence by transferring up to **20 entities—products,
 
 2. **[Automated WooCommerce Migration](https://app.litextension.com/?utm_source=wordpress-marketplace&utm_medium=app-description&utm_content=basic-migration%27&utm_campaign=app-listing)**
 Transfer all your essential data—products, customers, orders, and related entities—in just a few clicks. Our automated tool ensures speed and accuracy while allowing you to customize your migration with additional options. 
-
 Pricing is dynamic, based on the number of entities and additional options selected, making it a cost-effective solution for stores of all sizes. You can pre-check the price using our [Pricing Calculator](https://litextension.com/pricing.html?utm_source=wordpress-marketplace&utm_medium=app-description&utm_content=pricing-calculator%27&utm_campaign=app-listing).
 
-3. [All-in-One Migration](https://litextension.com/migration-services/all-in-one-data-migration-service.html?utm_source=wordpress-marketplace&utm_medium=app-description&utm_content=aio-migration&utm_campaign=app-listing)
+3. **[All-in-One Migration](https://litextension.com/migration-services/all-in-one-data-migration-service.html?utm_source=wordpress-marketplace&utm_medium=app-description&utm_content=aio-migration&utm_campaign=app-listing)**
 For a truly hands-off experience, let our migration experts handle the entire process for you. Our team ensures every detail is covered, from setup to final checks, delivering a secure and seamless transition to WooCommerce while saving you time and effort.
 
 ### Choose LitExtension for WooCommerce Migration
@@ -77,7 +83,6 @@ LitExtension guarantees precise data transfer, ensuring your products, customers
 
 **6. Time and cost savings**
 With LitExtension, migration takes only a fraction of the time compared to manual processes. Our transparent, flexible pricing ensures that you only pay for what you need, avoiding the high costs of custom development.
-
 
 ### What Data Types are Supported for WooCommerce Migration?
 **1. Data files:**
@@ -113,9 +118,9 @@ Maybe you need:
 
 ==Installation==
 
-1. Download the plugin and upload plugin files to your plugins folder, or install using WordPress built-in Add New Plugin installer.
-2. Log in your WordPress admin panel, go to Plugin page, Find "LitExtension" and active the plugin.
-3. Find LitExtension plugin on the left side menu. Register LitExtension and proceed with the migration setup.
+**1. Download the Plugin:** Get the LitExtension plugin via WooCommerce.org or by uploading the plugin files directly to your WooCommerce plugins folder.
+**2. Install and Activate:** Log in to your WooCommerce admin panel, navigate to Plugins > Add New, search for **"LitExtension"** and click Install Now. Activate it by clicking Activate Plugin.
+**3. Access the Plugin:** Find the LitExtension option in the left-side menu. Register or log in to your LitExtension account and proceed with the migration set up.
 
 == Frequently Asked Questions ==
 
@@ -135,11 +140,14 @@ Yes, LitExtension provides you with an opportunity to migrate passwords from and
 1. About us
 2. Install the plugin and login to connect to LitExtension
 3. Setup connector on source and target store
-4. Select entities and additional options to migrate
-5. Data mapping
-6. Migration on progress
-7. Product list result
-8. Category list result
+4. Setup source cart
+5. Target cart setup
+6. Select data you want to migrate
+7. Select migration additional options
+8. Map language and order status
+9. Perform full data migration
+10. Product list result
+11. Category list result
 
 == Changelog ==
 
