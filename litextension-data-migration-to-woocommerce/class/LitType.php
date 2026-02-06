@@ -78,7 +78,7 @@ class LitType
             'volusion' => 'Volusion',
             'weebly' => 'Weebly',
             'wix' => 'Wix',
-            'woocommerce' => 'Woocommerce',
+            'woocommerce' => 'WooCommerce',
             'wpestore' => 'WP eStore',
             'wponline' => 'WP Online Store',
             'wpecommerce' => 'Wp-Ecommerce',

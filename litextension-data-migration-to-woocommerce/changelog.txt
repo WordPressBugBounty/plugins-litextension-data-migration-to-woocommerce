@@ -1,0 +1,26 @@
+= 1.2.5 =
+* Security and compatibility improvements
+* Fixed WooCommerce Helper notice
+* Improved HPOS compatibility
+
+= 1.2.4 =
+* Tested up to: 6.9
+
+= 1.2.3 =
+* Tested up to: 6.8
+
+= 1.2.2 =
+* Compatible with PHP 8
+
+= 1.2.0 =
+* Add auto upload connector
+
+= 1.1.0 =
+* Add pages, blog posts migration to WooCommerce/Wordpress
+
+= 1.0.1 =
+* +$5 after Demo Migration
+* Assets updated
+
+= 1.0.0 =
+* First commit

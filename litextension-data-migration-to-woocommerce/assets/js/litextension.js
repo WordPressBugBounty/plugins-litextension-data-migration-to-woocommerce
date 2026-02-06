@@ -84,7 +84,8 @@ jQuery(document).ready(function($) {
         var src_url = $('#src-url').val();
         var url = $('#connect-url').val();
         var security_token = $('#security_token').val();
-        url = url + '&src_type='+src_type+'&src_url=' + encodeURI(src_url) + "&security_token=" + encodeURI(security_token);
+        url = "https://app.litextension.com/login-by-token?token=" + encodeURI(security_token) + '&redirect=' + encodeURI('create-migration/' + src_type + '-to-woocommerce') + '&src_url=' + encodeURI(src_url) + '&' + encodeURI(url);
+
         // console.log(src_type);
         window.open(url, '_blank');
     });

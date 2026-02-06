@@ -20,7 +20,7 @@
                 <img src="<?php echo esc_url($_param['plugin_url']) ?>/assets/images/logo.svg" style="width:200px; height: auto;"/>
             </div>
 
-            <div style="    font-size: 18px;    margin: 20px;    text-align: center;">Follow these steps to migrate data from <?php echo wp_kses(ucfirst($_param["src_type"]), []) ?> to Woocommerce</div>
+            <div style="    font-size: 18px;    margin: 20px;    text-align: center;">Follow these steps to migrate data to WooCommerce</div>
             <div class="lit-dialog" style="display: none">
                 <span id="msg"></span>
                 <div id="button-close"></div>
@@ -98,7 +98,7 @@
                                         <div>
                                             <select class="form-control" id="src-type">
                                                 <?php if(isset($_param)){foreach($_param['list_cart'] as $key => $cart){ ?>
-                                                    <option value="<?php echo sanitize_text_field($key); ?>" <?php if($key == 'magento'){echo 'selected';} ?>><?php echo sanitize_text_field($cart); ?></option>
+                                                    <option value="<?php echo sanitize_text_field($key); ?>" <?php if($key == 'shopify'){echo 'selected';} ?>><?php echo sanitize_text_field($cart); ?></option>
                                                 <?php }}else{echo '';} ?>
                                             </select>
                                         </div>
@@ -164,7 +164,7 @@
                             <li>High Priority Support</li>
                         </ul>
                         <br style="clear:both" />
-                        <p>You can buy Premium Migration before or after Free Migration. <a target="_blank" href="https://litextension.com/woocommerce-migration-tool/magento-to-woocommerce.html">Check details</a></p>
+                        <p>You can buy Premium Migration before or after Free Migration. <a target="_blank" href="https://litextension.com/woocommerce-migration-tool.html" >Check details</a></p>
                     </div>
                 </div>
 
@@ -172,11 +172,11 @@
             </div>
 
             <div class="lit-footer lit-plugin position-m-block">
-                <a href="https://litextension.com/how-litextension-works/migrate-from-<?php echo esc_url($_param['src_type']) ?>-to-woocommerce.html">How It Works</a>
-                <a href="https://litextension.com/faq/">FAQs</a>
-                <a href="https://blog.litextension.com/">Blog</a>
-                <a href="https://litextension.com/terms-conditions/">Terms and Conditions</a>
-                <a href="https://litextension.zendesk.com">Submit a Support Ticket</a>
+                <a href="https://litextension.com/why-litextension.html" target="_blank">About Us</a>
+                <a href="https://litextension.com/faq/" target="_blank">FAQs</a>
+                <a href="https://blog.litextension.com/" target="_blank">Blog</a>
+                <a href="https://litextension.com/terms-conditions/" target="_blank">Terms and Conditions</a>
+                <a href="https://litextension.zendesk.com" target="_blank">Submit a Support Ticket</a>
             </div>
             <div style="text-align: center; margin-top: 20px;">
                 <img src="<?php echo esc_url($_param['plugin_url']) ?>/assets/images/heart.svg" style="width: 12px" /> Find this plugin helpful? <a target="_blank" href="https://wordpress.org/support/plugin/litextension-data-migration-to-woocommerce/reviews/#new-post">Write us a review</a>

@@ -13,15 +13,7 @@ class LitInstaller
 	}
 
 	public static function litDeactivate(){
-		global $wpdb;
-	    $table_name = $wpdb->prefix . 'options';
-	    $wpdb->update(
-	        $table_name,
-	        array('autoload' => 'no'),
-	        array('option_name' => '_lit_litextension_version'),
-	        array('%s'),
-	        array('%s')
-	    );
+        update_option( '_lit_litextension_version', get_option( '_lit_litextension_version', LIT_VERSION ), 'no' );
 	}
 
 	public static function litUninstall(){

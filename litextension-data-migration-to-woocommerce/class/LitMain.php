@@ -64,20 +64,23 @@ class LitMain
     }
 
     public function enqueue_scripts(){
-        if(isset($_GET['page']) && ($_GET['page'] == 'litextension' || $_GET['page'] == 'migrate-to-woocommerce' )) {
-            wp_enqueue_style('custom-style-lit', plugins_url('../assets/css/litextension.css',__FILE__ ));
-            wp_enqueue_script('custom-script-lit', plugins_url('../assets/js/litextension.js',__FILE__ ));
+        $page = filter_input(INPUT_GET, 'page', FILTER_SANITIZE_SPECIAL_CHARS);;
+        if($page && ($page == 'litextension' || $page == 'migrate-to-woocommerce' )) {
+            wp_enqueue_style('custom-style-lit', plugins_url('../assets/css/litextension.css',__FILE__ ), [], 1.0);
+            wp_enqueue_script('custom-script-lit', plugins_url('../assets/js/litextension.js',__FILE__ ), array('jquery'),
+                '0.1',
+                false);
         }
     }
 
     public function migrateToWooCommerce(){
-        $src = self::APP_LINK . 'create-migration'. '?target_type=woocommerce&target_url=' . esc_url(get_home_url()) . '&app_mode=true';
+        $src = 'target_url=' . esc_url(get_home_url()) . '&app_mode=true';
         $_param = array(
             'src' => $src,
             'url_register' => self::APP_LINK . 'register',
             'url_forgot' => self::APP_LINK . 'forgot-password',
             'plugin_url' => plugins_url('..', __FILE__),
-            'app_link' => self::APP_LINK_LOGIN. 'api/auth/login',
+            'app_link' => self::APP_LINK_LOGIN. 'api/app-login',
             'list_cart' => $this->litType->sourceCarts()
         );
 	    $this->litView->litView('index', $_param);
@@ -98,9 +101,10 @@ class LitMain
 	public function liveChatHelp(){}
 
 	public function litAddSession(){
-	    if (isset($_GET['litEmail'])){
-            $_SESSION['lit-login-plugin'] = sanitize_email($_GET['litEmail']);
-            $_SESSION['lit-security-token'] = sanitize_text_field($_GET['security_token']);
+        $lit_email  = filter_input(INPUT_GET, 'litEmail', FILTER_SANITIZE_EMAIL);
+	    if ($lit_email){
+            $_SESSION['lit-login-plugin'] = sanitize_email($lit_email);
+            $_SESSION['lit-security-token'] = sanitize_text_field(filter_input(INPUT_GET, 'security_token', FILTER_SANITIZE_SPECIAL_CHARS));
         }
     }
 
@@ -112,12 +116,12 @@ class LitMain
     }
 
     public function litInstallConnector(){
-		$token = '';
-		if(isset($_REQUEST['token'])){
-	        $token = sanitize_text_field(@$_REQUEST['token']);
+		$token = filter_input(INPUT_GET, 'token', FILTER_SANITIZE_SPECIAL_CHARS);;
+		if(!$token){
+	        $token = '';
 		}
 	    $connector = new LitConnector();
-        echo "<p id='litextension-response'>".sanitize_text_field($connector->execute(LitConnector::ACTION_INSTALL, $token))."</p>";
+        echo "<p id='litextension-response'>".esc_html($connector->execute(LitConnector::ACTION_INSTALL, $token))."</p>";
     }
 
 	public function redirect($url){
