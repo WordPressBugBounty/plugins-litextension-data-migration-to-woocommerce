@@ -1,0 +1,29 @@
+<?php
+/**
+ * Connector screen: wp-admin/admin.php?page=install-connector
+ *
+ * @var array $_param Parameters passed by LitExtension\LitMain::litInstallConnector().
+ * @package LitExtension
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+?>
+<div class="wrap" id="litextension-connector">
+    <h1><?php esc_html_e( 'LitExtension Migration Connector', 'litextension-data-migration-to-woocommerce' ); ?></h1>
+
+    <?php if ( ! empty( $_param['legacy_token_in_url'] ) ) : ?>
+        <div class="notice notice-warning">
+            <p>
+                <?php esc_html_e( 'This link contained a connector token. For security reasons the plugin no longer accepts a token from a link: the connector token is generated on this site and the connector can only be installed with the button below.', 'litextension-data-migration-to-woocommerce' ); ?>
+            </p>
+        </div>
+    <?php endif; ?>
+
+    <p id="litextension-response">
+        <?php esc_html_e( 'The connector is a small file that lets the LitExtension migration service read from and write to this store while a migration is running.', 'litextension-data-migration-to-woocommerce' ); ?>
+    </p>
+
+    <?php require LIT_PATH_PLUGIN . 'views/partials/connector-panel.phtml'; ?>
+</div>

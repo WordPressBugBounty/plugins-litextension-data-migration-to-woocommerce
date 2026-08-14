@@ -1,0 +1,85 @@
+<?php
+/**
+ * Connector status and the nonce protected install / remove form.
+ *
+ * @var array $_param Parameters passed by the parent view.
+ * @package LitExtension
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+
+$lit_connector = isset( $_param['connector'] ) ? (array) $_param['connector'] : array();
+$lit_installed = ! empty( $lit_connector['installed'] );
+$lit_redirect  = isset( $_param['redirect_page'] ) ? (string) $_param['redirect_page'] : 'migrate-to-woocommerce';
+?>
+<?php
+/*
+ * Machine readable pointer to the plugin REST route. It lets the LitExtension
+ * app, signed in with the store owner's own administrator account, read the
+ * connector state without the owner copying values by hand. It only exposes a
+ * REST nonce, which is useless without that administrator's session.
+ */
+?>
+<div id="litextension-api"
+    data-rest-root="<?php echo esc_attr( esc_url_raw( rest_url( LitExtension\LitRest::NAMESPACE_V1 . '/connector' ) ) ); ?>"
+    data-rest-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
+    data-plugin-version="<?php echo esc_attr( LIT_VERSION ); ?>"
+    style="display:none"></div>
+
+<p>
+    <?php if ( $lit_installed ) : ?>
+        <strong><?php esc_html_e( 'The migration connector is installed.', 'litextension-data-migration-to-woocommerce' ); ?></strong>
+    <?php else : ?>
+        <strong><?php esc_html_e( 'The migration connector is not installed yet.', 'litextension-data-migration-to-woocommerce' ); ?></strong>
+        <?php esc_html_e( 'Install it when the LitExtension app asks you for a connector, then copy the URL and token below into the app.', 'litextension-data-migration-to-woocommerce' ); ?>
+    <?php endif; ?>
+</p>
+
+<?php if ( $lit_installed ) : ?>
+    <table class="widefat striped" style="max-width: 760px; margin-bottom: 15px;">
+        <tbody>
+            <tr>
+                <td style="width: 160px;"><?php esc_html_e( 'Connector URL', 'litextension-data-migration-to-woocommerce' ); ?></td>
+                <td><code><?php echo esc_html( $lit_connector['connector_url'] ); ?></code></td>
+            </tr>
+            <tr>
+                <td><?php esc_html_e( 'Connector token', 'litextension-data-migration-to-woocommerce' ); ?></td>
+                <td><code><?php echo esc_html( $lit_connector['token'] ); ?></code></td>
+            </tr>
+            <tr>
+                <td><?php esc_html_e( 'Connector version', 'litextension-data-migration-to-woocommerce' ); ?></td>
+                <td><?php echo esc_html( $lit_connector['connector_version'] ); ?></td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="description">
+        <?php esc_html_e( 'Treat the token like a password. Anyone who knows it can run the migration operations on this store, so remove the connector as soon as your migration is finished.', 'litextension-data-migration-to-woocommerce' ); ?>
+    </p>
+<?php endif; ?>
+
+<?php if ( empty( $lit_connector['uploads_writable'] ) ) : ?>
+    <div class="notice notice-warning inline">
+        <p><?php esc_html_e( 'The WordPress uploads folder is not writable. Product images cannot be migrated until the web server can write to it.', 'litextension-data-migration-to-woocommerce' ); ?></p>
+    </div>
+<?php endif; ?>
+
+<form method="post" action="<?php echo esc_url( $_param['form_url'] ); ?>" style="margin-top: 10px;">
+    <?php wp_nonce_field( $_param['nonce_action'] ); ?>
+    <input type="hidden" name="action" value="<?php echo esc_attr( $_param['form_action'] ); ?>">
+    <input type="hidden" name="lit_redirect" value="<?php echo esc_attr( $lit_redirect ); ?>">
+
+    <?php if ( $lit_installed ) : ?>
+        <button type="submit" name="lit_action" value="reinstall" class="button">
+            <?php esc_html_e( 'Reinstall and generate a new token', 'litextension-data-migration-to-woocommerce' ); ?>
+        </button>
+        <button type="submit" name="lit_action" value="uninstall" class="button">
+            <?php esc_html_e( 'Remove connector', 'litextension-data-migration-to-woocommerce' ); ?>
+        </button>
+    <?php else : ?>
+        <button type="submit" name="lit_action" value="install" class="button button-primary">
+            <?php esc_html_e( 'Install connector', 'litextension-data-migration-to-woocommerce' ); ?>
+        </button>
+    <?php endif; ?>
+</form>

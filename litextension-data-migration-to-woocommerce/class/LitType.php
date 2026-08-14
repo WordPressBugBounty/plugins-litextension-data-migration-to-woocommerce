@@ -1,8 +1,10 @@
 <?php
 
-
 namespace LitExtension;
 
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 class LitType
 {

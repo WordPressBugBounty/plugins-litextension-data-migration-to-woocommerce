@@ -6,16 +6,45 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+/**
+ * Installs and removes the migration connector.
+ *
+ * The connector is shipped inside this plugin (connector/connector.php.tpl) and
+ * copied into le_connector/connector.php. Nothing is downloaded at runtime and
+ * the connector token is always generated locally with a CSPRNG: it is never
+ * read from a request parameter.
+ */
 class LitConnector {
+
     const ACTION_INSTALL   = 'installConnector';
     const ACTION_UNINSTALL = 'uninstallConnector';
     const ACTION_CHECK     = 'checkConnector';
 
-    const URL_DOWNLOAD_CONNECTOR = 'https://api.litextension.com/api/get-connector';
+    const CONNECTOR_VERSION = '2.0.0';
+    const CONNECTOR_DIR     = 'le_connector';
 
-    protected $_rootPath;
+    const OPTION_TOKEN        = '_lit_connector_token';
+    const OPTION_TOKEN_HASH   = '_lit_connector_token_hash';
+    const OPTION_INSTALLED_AT = '_lit_connector_installed_at';
+
+    /**
+     * @var string Absolute path of the connector directory.
+     */
     protected $_connectorPath;
+
+    /**
+     * @var string Absolute path of the installed connector file.
+     */
     protected $_connectorFile;
+
+    /**
+     * @var string Absolute path of the bundled connector template.
+     */
+    protected $_templateFile;
+
+    /**
+     * @var array
+     */
     protected $_response;
 
     /**
@@ -24,12 +53,9 @@ class LitConnector {
     protected $fs = null;
 
     public function __construct() {
-        $plugin_name = plugin_basename( __FILE__ );
-        $plugin_name = explode( '/', $plugin_name )[0];
-
-        $this->_rootPath      = rtrim( get_home_path(), '/' );
-        $this->_connectorPath = WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . $plugin_name . DIRECTORY_SEPARATOR . 'le_connector';
+        $this->_connectorPath = trailingslashit( LIT_PATH_PLUGIN ) . self::CONNECTOR_DIR;
         $this->_connectorFile = $this->_connectorPath . DIRECTORY_SEPARATOR . 'connector.php';
+        $this->_templateFile  = trailingslashit( LIT_PATH_PLUGIN ) . 'connector' . DIRECTORY_SEPARATOR . 'connector.php.tpl';
         $this->_response      = $this->createResponse( 'success' );
 
         $this->init_filesystem();
@@ -42,12 +68,10 @@ class LitConnector {
             return;
         }
 
-        // Ensure filesystem is initialized.
         if ( ! function_exists( 'WP_Filesystem' ) ) {
             require_once ABSPATH . 'wp-admin/includes/file.php';
         }
 
-        // Tries to initialize with available method. In admin it usually works without creds.
         WP_Filesystem();
 
         if ( $wp_filesystem instanceof \WP_Filesystem_Base ) {
@@ -68,34 +92,51 @@ class LitConnector {
         return $this->createResponse( 'success', $data, $msg, $code );
     }
 
-    public function execute( $action, $token ) {
+    /**
+     * Run a connector action.
+     *
+     * Callers are responsible for the capability and nonce checks; this class is
+     * never reachable from an unauthenticated or cross-site request.
+     *
+     * @param string $action     One of the ACTION_* constants.
+     * @param bool   $regenerate Rotate the token before installing.
+     * @return array
+     */
+    public function execute( $action, $regenerate = false ) {
         try {
             switch ( $action ) {
                 case self::ACTION_CHECK:
-                    return $this->responseSuccess( $this->isConnectorExist() );
+                    return $this->responseSuccess( $this->getStatus() );
 
                 case self::ACTION_INSTALL:
-                    $this->_installConnector( $token );
+                    $this->_installConnector( (bool) $regenerate );
+                    $this->_response['data'] = $this->getStatus();
                     break;
 
                 case self::ACTION_UNINSTALL:
                     $this->_unInstallBridge();
+                    $this->_response['data'] = $this->getStatus();
                     break;
 
                 default:
                     if ( ! $action ) {
                         /* translators: Error message when action is missing. */
-                        throw new \Exception( __( 'Action is required!', 'litextension-data-migration-to-woocommerce' ) );
+                        throw new \Exception( esc_html__( 'Action is required!', 'litextension-data-migration-to-woocommerce' ) );
                     }
 
-                    /* translators: %s: Action name. */
-                    throw new \Exception(sprintf(__( 'Unknown Action: %s', 'litextension-data-migration-to-woocommerce' ), (string) $action));
+                    throw new \Exception(
+                        sprintf(
+                            /* translators: %s: Action name. */
+                            esc_html__( 'Unknown Action: %s', 'litextension-data-migration-to-woocommerce' ),
+                            esc_html( (string) $action )
+                        )
+                    );
             }
         } catch ( \Throwable $e ) {
             $this->_handleError( $e );
         }
 
-        return wp_json_encode( $this->_response );
+        return $this->_response;
     }
 
     /**
@@ -114,208 +155,229 @@ class LitConnector {
             return $this->fs->exists( $this->_connectorFile );
         }
 
-        // Fallback if filesystem cannot be initialized (rare).
         return file_exists( $this->_connectorFile );
     }
 
-    public function newException( $error_code ) {
-
-        throw new \Exception( esc_html(Connector_Errors::getErrorMessage( $error_code )), esc_textarea($error_code) );
+    public function getConnectorUrl() {
+        return trailingslashit( LIT_URL_PLUGIN ) . self::CONNECTOR_DIR . '/connector.php';
     }
 
-    protected function _installConnector( $token ) {
-        if ( ! $token ) {
-            $this->newException( Connector_Errors::MODULE_ERROR_EMPTY_TOKEN );
-        }
+    /**
+     * Current connector state, used by the admin screen and the REST route.
+     *
+     * @return array
+     */
+    public function getStatus() {
+        $upload = wp_get_upload_dir();
 
-        if ( $this->isConnectorExist() ) {
-            if ( ! $this->_changeToken( $token ) ) {
-                $this->newException( Connector_Errors::CONNECTOR_FILE_PERMISSION );
-            }
-            return;
-        }
-
-        $this->_downloadConnector( $token );
-    }
-
-    protected function _changeToken( $token ) {
-        $this->init_filesystem();
-
-        $token = sanitize_text_field( (string) $token );
-
-        $connector = '';
-        if ( $this->fs ) {
-            $connector = $this->fs->get_contents( $this->_connectorFile );
-        } else {
-            $connector = file_get_contents( $this->_connectorFile ); // Fallback.
-        }
-
-        if ( false === $connector || '' === $connector ) {
-            return false;
-        }
-
-        preg_match(
-            '/^\s*define\s*\(\s*\'LECM_TOKEN\',\s*(\'|\")(.+)(\'|\")\s*\)\s*;/m',
-            $connector,
-            $match
+        return array(
+            'installed'         => $this->isConnectorExist(),
+            'connector_url'     => $this->getConnectorUrl(),
+            'connector_version' => self::CONNECTOR_VERSION,
+            'plugin_version'    => LIT_VERSION,
+            'token'             => $this->isConnectorExist() ? (string) get_option( self::OPTION_TOKEN, '' ) : '',
+            'installed_at'      => (int) get_option( self::OPTION_INSTALLED_AT, 0 ),
+            'site_url'          => home_url( '/' ),
+            'uploads_writable'  => empty( $upload['error'] ) && wp_is_writable( $upload['basedir'] ),
         );
-
-        if ( ! $match ) {
-            return false;
-        }
-
-        $old_token = $match[2];
-        if ( $old_token === $token ) {
-            return true;
-        }
-
-        $connector = str_replace( $old_token, $token, $connector );
-
-        if ( ! $this->_checkConnectorFilePermission() ) {
-            $this->newException( Connector_Errors::CONNECTOR_FILE_PERMISSION );
-        }
-
-        if ( $this->fs ) {
-            return (bool) $this->fs->put_contents( $this->_connectorFile, $connector, FS_CHMOD_FILE );
-        }
-
-        return (bool) file_put_contents( $this->_connectorFile, $connector ); // Fallback.
     }
 
-    protected function _downloadConnector( $token ) {
-        $this->init_filesystem();
+    /**
+     * The connector token. Generated locally on first use.
+     *
+     * @return string
+     */
+    public function getToken() {
+        $token = (string) get_option( self::OPTION_TOKEN, '' );
 
-        $token = sanitize_text_field( (string) $token );
-
-        if ( ! $token ) {
-            $this->newException( Connector_Errors::MODULE_ERROR_EMPTY_TOKEN );
+        if ( '' === $token || ! $this->isValidToken( $token ) ) {
+            $token = $this->regenerateToken();
         }
+
+        return $token;
+    }
+
+    /**
+     * Create a brand new token and forget the previous one.
+     *
+     * @return string
+     */
+    public function regenerateToken() {
+        $token = bin2hex( random_bytes( 16 ) );
+
+        update_option( self::OPTION_TOKEN, $token, false );
+        update_option( self::OPTION_TOKEN_HASH, hash( 'sha256', $token ), false );
+
+        return $token;
+    }
+
+    /**
+     * Tokens are always hexadecimal, so nothing that could break out of the PHP
+     * string literal in the connector file can ever be stored.
+     *
+     * @param string $token Token to validate.
+     * @return bool
+     */
+    public function isValidToken( $token ) {
+        return (bool) preg_match( '/^[a-f0-9]{32,64}$/', (string) $token );
+    }
+
+    public function newException( $error_code ) {
+        throw new \Exception( esc_html( Connector_Errors::getErrorMessage( $error_code ) ), (int) $error_code );
+    }
+
+    /**
+     * Copy the bundled connector into place with a freshly generated token.
+     *
+     * @param bool $regenerate Rotate the token first.
+     * @return void
+     */
+    protected function _installConnector( $regenerate = false ) {
+        $this->init_filesystem();
 
         if ( ! $this->fs ) {
-            // If filesystem API not available, keep consistent behavior by failing fast.
             $this->newException( Connector_Errors::MODULE_ERROR_PERMISSION );
         }
 
-        // Ensure dir exists (WP_Filesystem).
-        if ( ! $this->fs->is_dir( $this->_connectorPath ) ) {
-            $made = $this->fs->mkdir( $this->_connectorPath, FS_CHMOD_DIR );
-            if ( ! $made ) {
-                $this->newException( Connector_Errors::MODULE_ERROR_PERMISSION );
-            }
+        $template = $this->fs->get_contents( $this->_templateFile );
+
+        if ( false === $template || '' === $template ) {
+            $this->newException( Connector_Errors::MODULE_ERROR_TEMPLATE_MISSING );
         }
 
-        // Check writable via WP_Filesystem by attempting to put a temp file.
-        if ( ! $this->_checkDirPermission( $this->_connectorPath ) ) {
+        if ( $regenerate || '' === (string) get_option( self::OPTION_TOKEN, '' ) ) {
+            $this->regenerateToken();
+        }
+
+        $token = $this->getToken();
+
+        if ( ! $this->isValidToken( $token ) ) {
+            $this->newException( Connector_Errors::MODULE_ERROR_EMPTY_TOKEN );
+        }
+
+        // The endpoint authenticates against this hash, never against the file.
+        update_option( self::OPTION_TOKEN_HASH, hash( 'sha256', $token ), false );
+
+        $upload = wp_get_upload_dir();
+
+        if ( ! empty( $upload['error'] ) ) {
             $this->newException( Connector_Errors::MODULE_ERROR_INSTALLED_PERMISSION );
         }
 
-        $response = wp_remote_get( self::URL_DOWNLOAD_CONNECTOR );
+        $store_base = trailingslashit( wp_normalize_path( ABSPATH ) );
+        $upload_dir = untrailingslashit( wp_normalize_path( $upload['basedir'] ) );
 
-        if ( is_wp_error( $response ) ) {
+        if ( 0 !== strpos( trailingslashit( $upload_dir ), $store_base ) ) {
+            $this->newException( Connector_Errors::MODULE_ERROR_UPLOAD_OUTSIDE_ROOT );
+        }
+
+        $replacements = array(
+            '{{WP_LOAD_PATH}}' => $store_base . 'wp-load.php',
+        );
+
+        foreach ( $replacements as $placeholder => $value ) {
+            // Values land inside single quoted PHP strings in the template.
+            $template = str_replace( $placeholder, addcslashes( (string) $value, "\\'" ), $template );
+        }
+
+        if ( ! $this->fs->is_dir( $this->_connectorPath ) && ! $this->fs->mkdir( $this->_connectorPath, FS_CHMOD_DIR ) ) {
             $this->newException( Connector_Errors::MODULE_ERROR_PERMISSION );
         }
 
-        $body = wp_remote_retrieve_body( $response );
-        $data = json_decode( $body, true );
-
-        if ( ! is_array( $data ) || empty( $data['data'] ) ) {
-            $this->newException( Connector_Errors::MODULE_ERROR_PERMISSION );
-        }
-
-        $decoded = base64_decode( (string) $data['data'], true );
-        if ( false === $decoded ) {
-            $this->newException( Connector_Errors::MODULE_ERROR_PERMISSION );
-        }
-
-        $content = str_replace( '__SAMPLE__LECM__TOKEN__', $token, $decoded );
-
-        $written = $this->fs->put_contents( $this->_connectorFile, $content, FS_CHMOD_FILE );
-        if ( ! $written ) {
+        if ( ! $this->fs->put_contents( $this->_connectorFile, $template, FS_CHMOD_FILE ) ) {
             $this->newException( Connector_Errors::CONNECTOR_FILE_PERMISSION );
         }
 
+        $this->_writeHardeningFiles();
+
+        update_option( self::OPTION_INSTALLED_AT, time(), false );
+
         $this->_response['code'] = Connector_Errors::MODULE_CONNECTOR_SUCCESSFULLY_INSTALLED;
+        $this->_response['msg']  = esc_html__( 'Connector installed successfully.', 'litextension-data-migration-to-woocommerce' );
     }
 
+    /**
+     * Keep the connector folder free of anything but the bridge itself.
+     */
+    protected function _writeHardeningFiles() {
+        $this->fs->put_contents( $this->_connectorPath . DIRECTORY_SEPARATOR . 'index.php', "<?php\n// Silence is golden.\n", FS_CHMOD_FILE );
+
+        // Earlier releases wrote an .htaccess here; remove it so the plugin
+        // directory contains no hidden files.
+        $legacy_htaccess = $this->_connectorPath . DIRECTORY_SEPARATOR . '.htaccess';
+
+        if ( $this->fs->exists( $legacy_htaccess ) ) {
+            wp_delete_file( $legacy_htaccess );
+        }
+    }
+
+    /**
+     * Remove the connector and revoke its token.
+     *
+     * @return bool
+     */
     protected function _unInstallBridge() {
-        if ( ! $this->isConnectorExist() ) {
-            return true;
+        $deleted = true;
+
+        if ( $this->isConnectorExist() || ( $this->fs && $this->fs->is_dir( $this->_connectorPath ) ) ) {
+            $deleted = $this->_deleteDir( $this->_connectorPath );
         }
 
-        return $this->_deleteDir( $this->_connectorPath );
+        delete_option( self::OPTION_TOKEN );
+        delete_option( self::OPTION_TOKEN_HASH );
+        delete_option( self::OPTION_INSTALLED_AT );
+
+        if ( ! $deleted ) {
+            $this->newException( Connector_Errors::CONNECTOR_FILE_PERMISSION );
+        }
+
+        $this->_response['msg'] = esc_html__( 'Connector removed and its token revoked.', 'litextension-data-migration-to-woocommerce' );
+
+        return $deleted;
     }
 
-    protected function _checkDirPermission( $path ) {
+    /**
+     * Public helper used by the upgrade routine to drop a connector that was
+     * installed by a vulnerable version of the plugin.
+     *
+     * @return bool
+     */
+    public function forceRemove() {
         $this->init_filesystem();
 
         if ( ! $this->fs ) {
             return false;
         }
 
-        // Use a temp file write to validate permission.
-        $tmp = trailingslashit( $path ) . 'le_tmp_' . wp_generate_password( 8, false ) . '.txt';
+        $removed = true;
 
-        $ok = $this->fs->put_contents( $tmp, '1', FS_CHMOD_FILE );
-        if ( $ok ) {
-            wp_delete_file( $tmp );
-            return true;
+        if ( $this->fs->is_dir( $this->_connectorPath ) ) {
+            $removed = $this->_deleteDir( $this->_connectorPath );
         }
 
-        // Try chmod directory then retry once.
-        $this->fs->chmod( $path, FS_CHMOD_DIR );
+        delete_option( self::OPTION_TOKEN );
+        delete_option( self::OPTION_TOKEN_HASH );
+        delete_option( self::OPTION_INSTALLED_AT );
 
-        $ok = $this->fs->put_contents( $tmp, '1', FS_CHMOD_FILE );
-        if ( $ok ) {
-            wp_delete_file( $tmp );
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function _checkConnectorFilePermission() {
-        $this->init_filesystem();
-
-        if ( ! $this->fs ) {
-            return false;
-        }
-
-        // If file doesn't exist yet, treat as writable if directory is writable.
-        if ( ! $this->fs->exists( $this->_connectorFile ) ) {
-            return $this->_checkDirPermission( $this->_connectorPath );
-        }
-
-        // Try read + write same content (lightweight check).
-        $current = $this->fs->get_contents( $this->_connectorFile );
-        if ( false !== $current ) {
-            $ok = $this->fs->put_contents( $this->_connectorFile, $current, FS_CHMOD_FILE );
-            if ( $ok ) {
-                return true;
-            }
-        }
-
-        $this->fs->chmod( $this->_connectorFile, FS_CHMOD_FILE );
-
-        $current = $this->fs->get_contents( $this->_connectorFile );
-        if ( false !== $current ) {
-            return (bool) $this->fs->put_contents( $this->_connectorFile, $current, FS_CHMOD_FILE );
-        }
-
-        return false;
+        return $removed;
     }
 
     protected function _deleteDir( $dirPath ) {
         $this->init_filesystem();
 
-        if ( ! $this->fs ) {
+        if ( ! $this->fs || ! $this->fs->is_dir( $dirPath ) ) {
             return false;
         }
 
-        if ( ! $this->fs->is_dir( $dirPath ) ) {
+        // Never walk outside the plugin directory.
+        $plugin_dir = trailingslashit( wp_normalize_path( LIT_PATH_PLUGIN ) );
+
+        if ( 0 !== strpos( trailingslashit( wp_normalize_path( $dirPath ) ), $plugin_dir ) ) {
             return false;
         }
 
         $objects = $this->fs->dirlist( $dirPath, true );
+
         if ( is_array( $objects ) ) {
             foreach ( $objects as $name => $item ) {
                 $full = trailingslashit( $dirPath ) . $name;
@@ -323,13 +385,11 @@ class LitConnector {
                 if ( 'd' === $item['type'] ) {
                     $this->_deleteDir( $full );
                 } else {
-                    // WP preferred delete for files.
                     wp_delete_file( $full );
                 }
             }
         }
 
-        // Remove the directory itself.
         return (bool) $this->fs->rmdir( $dirPath, true );
     }
 }

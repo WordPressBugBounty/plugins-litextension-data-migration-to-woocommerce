@@ -3,17 +3,17 @@
  * Plugin Name: LitExtension - Automated Store Migration & Import
  * Plugin URI: https://litextension.com/
  * Description: Migrate your store from 140+ platforms to WooCommerce with no downtime, no data loss, and secure, automated migration.
- * Version: 1.2.5
+ * Version: 1.2.7
  * Author: Litextension
  * Author URI: https://litextension.com
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: litextension-data-migration-to-woocommerce
  * Requires at least: 5.8
- * Tested up to: 6.9
+ * Tested up to: 7.0
  * Requires PHP: 7.4
  * WC requires at least: 6.0
- * WC tested up to: 9.0
+ * WC tested up to: 10.4
  */
 
 namespace LitExtension;
@@ -22,9 +22,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'LIT_VERSION', '1.2.5' );
+define( 'LIT_VERSION', '1.2.7' );
 define( 'LIT_PATH_PLUGIN', __DIR__ . '/' );
 define( 'LIT_URL_PLUGIN', plugin_dir_url( __FILE__ ) ); // plugin_dir_url already ends with /
+define( 'LIT_PLUGIN_FILE', __FILE__ );
 
 require LIT_PATH_PLUGIN . 'class/LitAutoLoad.php';
 
@@ -44,6 +45,11 @@ add_action( 'before_woocommerce_init', function () {
 } );
 
 add_action( 'init', array( __NAMESPACE__ . '\LitMain', 'init' ), 21 );
+
+/**
+ * One time upgrade routine: revokes connectors installed by an affected release.
+ */
+add_action( 'admin_init', array( __NAMESPACE__ . '\LitInstaller', 'maybeUpgrade' ) );
 
 register_activation_hook( __FILE__, array( __NAMESPACE__ . '\LitInstaller', 'litActivate' ) );
 register_deactivation_hook( __FILE__, array( __NAMESPACE__ . '\LitInstaller', 'litDeactivate' ) );

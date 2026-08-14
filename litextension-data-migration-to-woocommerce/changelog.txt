@@ -1,3 +1,18 @@
+= 1.2.7 =
+* Security: the connector copy action now requires both ends inside the uploads folder, so store configuration cannot be copied to a location the connector can read back
+* Security: connector directory listings are limited to the uploads folder
+
+= 1.2.6 =
+* Security: connector code now ships with the plugin; le_connector/connector.php is only a bridge that loads WordPress (nothing is downloaded at runtime)
+* Security: connector install/remove requires manage_options and a WordPress nonce (CSRF fix)
+* Security: connector token is generated locally with a CSPRNG, never taken from a URL parameter
+* Security: connector file operations are limited to the uploads folder and cannot write executable files
+* Security: removed the Adminer, phpinfo, opcache and SQL console actions from the connector
+* Security: connectors installed by 1.2.5 and earlier are removed on upgrade and their tokens revoked
+* Added REST route litextension/v1/connector for automated setup with Application Passwords
+* Replaced PHP sessions with user meta and escaped all admin output
+* Reported by marim00
+
 = 1.2.5 =
 * Security and compatibility improvements
 * Fixed WooCommerce Helper notice

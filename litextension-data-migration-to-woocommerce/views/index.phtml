@@ -1,118 +1,129 @@
 <?php
-    $check = false;
-    $email = '';
-    $security_token = "";
-    if (isset($_SESSION['lit-login-plugin'])){
-        $email = sanitize_email($_SESSION['lit-login-plugin']);
-        $check = true;
-    }
+/**
+ * Main migration screen.
+ *
+ * @var array $_param Parameters passed by LitExtension\LitMain::migrateToWooCommerce().
+ * @package LitExtension
+ */
 
-    if (isset($_SESSION['lit-security-token'])){
-        $security_token = sanitize_text_field($_SESSION['lit-security-token']);
-    }
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
+$lit_email     = isset( $_param['email'] ) ? (string) $_param['email'] : '';
+$lit_token     = isset( $_param['token'] ) ? (string) $_param['token'] : '';
+$lit_logged_in = ( '' !== $lit_email );
 ?>
 <div id="app">
-    <input style="display: none;" value="<?php echo esc_url(admin_url('admin.php')); ?>" id="admin-url">
+    <input type="hidden" value="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" id="admin-url">
     <div class="container">
         <div class="row">
             <div class="lit-header">
-                <img src="<?php echo esc_url($_param['plugin_url']) ?>/assets/images/logo.svg" style="width:200px; height: auto;"/>
+                <img src="<?php echo esc_url( $_param['plugin_url'] . '/assets/images/logo.svg' ); ?>" alt="<?php esc_attr_e( 'LitExtension', 'litextension-data-migration-to-woocommerce' ); ?>" style="width:200px; height: auto;"/>
             </div>
 
-            <div style="    font-size: 18px;    margin: 20px;    text-align: center;">Follow these steps to migrate data to WooCommerce</div>
+            <div style="font-size: 18px; margin: 20px; text-align: center;">
+                <?php esc_html_e( 'Follow these steps to migrate data to WooCommerce', 'litextension-data-migration-to-woocommerce' ); ?>
+            </div>
+
             <div class="lit-dialog" style="display: none">
                 <span id="msg"></span>
                 <div id="button-close"></div>
             </div>
-            <div class="lit-dialog-user" <?php if($check == false){ echo 'style="display: none"';} ?>>
-                <span id="user-msg">You are logged in LitExtension as <?php echo sanitize_email($email); ?>.</span>
-                <div id="user-button-logout">Logout</div>
+
+            <div class="lit-dialog-user"<?php echo $lit_logged_in ? '' : ' style="display: none"'; ?>>
+                <span id="user-msg">
+                    <?php
+                    printf(
+                        /* translators: %s: LitExtension account email address. */
+                        esc_html__( 'You are logged in LitExtension as %s.', 'litextension-data-migration-to-woocommerce' ),
+                        esc_html( $lit_email )
+                    );
+                    ?>
+                </span>
+                <div id="user-button-logout"><?php esc_html_e( 'Logout', 'litextension-data-migration-to-woocommerce' ); ?></div>
             </div>
+
             <div class="lit-signin">
-                <div class="panel panel-default <?php if($check == true){echo 'done';} ?>" id="lit-signin">
+                <div class="panel panel-default<?php echo $lit_logged_in ? ' done' : ''; ?>" id="lit-signin">
                     <h1 class="panel-heading" id="header-signin">
                         <span class="step-number" id="step-1"><i>1</i></span>
-                        <span class="step-name">Log In</span>
+                        <span class="step-name"><?php esc_html_e( 'Log In', 'litextension-data-migration-to-woocommerce' ); ?></span>
                         <span class="step-done"></span>
                     </h1>
-                    <div class="panel-body" id="body-signin" <?php if($check == true){ echo 'style="display: none"';} ?>>
+                    <div class="panel-body" id="body-signin"<?php echo $lit_logged_in ? ' style="display: none"' : ''; ?>>
                         <div class="row">
                             <div class="login-panel">
                                 <form class="form-horizontal" id="signin">
-                                    <input style="display: none" id="url" type="text" class="form-control" value="<?php if(isset($_param)){echo esc_url($_param['app_link']);}else{echo '';} ?>">
+                                    <input type="hidden" id="url" value="<?php echo esc_url( $_param['app_link'] ); ?>">
                                     <div class="form-group email-panel">
-                                        <label for="email" class="control-label">Email</label>
+                                        <label for="email" class="control-label"><?php esc_html_e( 'Email', 'litextension-data-migration-to-woocommerce' ); ?></label>
                                         <div>
                                             <input id="email" type="email" class="form-control" name="email" value="" required>
                                         </div>
                                     </div>
                                     <div class="form-group password-panel">
-                                        <label for="password" class="control-label">Password</label>
+                                        <label for="password" class="control-label"><?php esc_html_e( 'Password', 'litextension-data-migration-to-woocommerce' ); ?></label>
                                         <div>
                                             <input id="password" type="password" class="form-control" name="password" required>
                                         </div>
                                     </div>
                                     <div class="form-group button-panel">
                                         <div>
-
-
-
-
-
-
-
-
-
-                                            <button type="submit" class="btn btn-green signin">Log In</button>
+                                            <button type="submit" class="btn btn-green signin"><?php esc_html_e( 'Log In', 'litextension-data-migration-to-woocommerce' ); ?></button>
                                         </div>
                                         <div class="forgot">
-                                            <a href="<?php if(isset($_param)){echo esc_url($_param['url_forgot']);}else{echo '';} ?>" target="_blank">Forgot Password?</a>
+                                            <a href="<?php echo esc_url( $_param['url_forgot'] ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Forgot Password?', 'litextension-data-migration-to-woocommerce' ); ?></a>
                                         </div>
                                     </div>
                                     <div class="form-group button-panel">
                                         <div class="create-acc">
-                                            <span>New to LitExtension? <a href="<?php if(isset($_param)){echo esc_url($_param['url_register']);}else{echo '';} ?>" target="_blank">Sign Up</a></span>
+                                            <span>
+                                                <?php esc_html_e( 'New to LitExtension?', 'litextension-data-migration-to-woocommerce' ); ?>
+                                                <a href="<?php echo esc_url( $_param['url_register'] ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Sign Up', 'litextension-data-migration-to-woocommerce' ); ?></a>
+                                            </span>
                                         </div>
                                     </div>
-
                                 </form>
-                                <div style="padding: 0 20px;">If you often login LitExtension via social buttons like Facebook or Google and do not have a password, please use Forgot Password to reset your password and use it to login here.</div>
+                                <div style="padding: 0 20px;">
+                                    <?php esc_html_e( 'If you often login LitExtension via social buttons like Facebook or Google and do not have a password, please use Forgot Password to reset your password and use it to login here.', 'litextension-data-migration-to-woocommerce' ); ?>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="panel panel-default <?php if($check == false){echo 'hidden-panel';} ?>" id="lit-connect">
+
+                <div class="panel panel-default<?php echo $lit_logged_in ? '' : ' hidden-panel'; ?>" id="lit-connect">
                     <h1 class="panel-heading" id="header-connect">
                         <span class="step-number" id="step-2"><i>2</i></span>
-                        <span class="step-name">Connect Source Store</span>
+                        <span class="step-name"><?php esc_html_e( 'Connect Source Store', 'litextension-data-migration-to-woocommerce' ); ?></span>
                         <span class="step-done"></span>
                     </h1>
-                    <div class="panel-body" id="body-connect" <?php if($check == false){ echo 'style="display: none"';} ?>>
+                    <div class="panel-body" id="body-connect"<?php echo $lit_logged_in ? '' : ' style="display: none"'; ?>>
                         <div class="row">
                             <div class="login-panel">
                                 <form class="form-horizontal" id="connect">
-                                    <input id="connect-url" type="hidden" value="<?php if(isset($_param)){echo esc_url($_param['src']);}else{echo '';} ?>" >
+                                    <input id="connect-url" type="hidden" value="<?php echo esc_attr( $_param['src'] ); ?>">
                                     <div class="form-group email-panel">
-                                        <label for="src-type" class="control-label">Source Cart Type</label>
+                                        <label for="src-type" class="control-label"><?php esc_html_e( 'Source Cart Type', 'litextension-data-migration-to-woocommerce' ); ?></label>
                                         <div>
                                             <select class="form-control" id="src-type">
-                                                <?php if(isset($_param)){foreach($_param['list_cart'] as $key => $cart){ ?>
-                                                    <option value="<?php echo sanitize_text_field($key); ?>" <?php if($key == 'shopify'){echo 'selected';} ?>><?php echo sanitize_text_field($cart); ?></option>
-                                                <?php }}else{echo '';} ?>
+                                                <?php foreach ( (array) $_param['list_cart'] as $lit_key => $lit_cart ) : ?>
+                                                    <option value="<?php echo esc_attr( $lit_key ); ?>"<?php selected( 'shopify', $lit_key ); ?>><?php echo esc_html( $lit_cart ); ?></option>
+                                                <?php endforeach; ?>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="form-group email-panel">
-                                        <label for="src-url" class="control-label">Source Cart Url</label>
+                                        <label for="src-url" class="control-label"><?php esc_html_e( 'Source Cart Url', 'litextension-data-migration-to-woocommerce' ); ?></label>
                                         <div>
                                             <input id="src-url" type="url" class="form-control" name="src_url" placeholder="https://your-source-site.com" required style="width: 400px;">
                                         </div>
                                     </div>
                                     <div class="form-group button-panel">
                                         <div>
-                                            <input  type="hidden" id="security_token"  name="security_token" value="<?php echo sanitize_text_field($security_token); ?>">
-                                            <button type="submit" class="btn btn-green signin">Connect</button>
+                                            <input type="hidden" id="security_token" name="security_token" value="<?php echo esc_attr( $lit_token ); ?>">
+                                            <button type="submit" class="btn btn-green signin"><?php esc_html_e( 'Connect', 'litextension-data-migration-to-woocommerce' ); ?></button>
                                         </div>
                                     </div>
                                 </form>
@@ -121,50 +132,67 @@
                     </div>
                 </div>
 
+                <div class="panel panel-default" id="lit-connector">
+                    <h1 class="panel-heading" id="header-connector">
+                        <span class="step-number" id="step-3"><i>3</i></span>
+                        <span class="step-name"><?php esc_html_e( 'Migration Connector', 'litextension-data-migration-to-woocommerce' ); ?></span>
+                        <span class="step-done"></span>
+                    </h1>
+                    <div class="panel-body" id="body-connector">
+                        <div class="row">
+                            <div class="login-panel" style="padding: 0 20px;">
+                                <?php require LIT_PATH_PLUGIN . 'views/partials/connector-panel.phtml'; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="content-blocks">
                 <div class="block-left lit-block">
-                    <h3 class="block-header block-free">Included in this Free Migration</h3>
+                    <h3 class="block-header block-free"><?php esc_html_e( 'Included in this Free Migration', 'litextension-data-migration-to-woocommerce' ); ?></h3>
 
                     <div class="block-ct">
-                        <p>The following features are supported:</p>
+                        <p><?php esc_html_e( 'The following features are supported:', 'litextension-data-migration-to-woocommerce' ); ?></p>
                         <ul>
-                            <li>Migrate Product categories</li>
-                            <li>Migrate Product categories images</li>
-                            <li>Migrate Products</li>
-                            <li>Migrate Product images, thumbnails</li>
-                            <li>Migrate Product stocks</li>
-                            <li>Unlimited migration</li>
-                            <li>Community Support</li>
+                            <li><?php esc_html_e( 'Migrate Product categories', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Migrate Product categories images', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Migrate Products', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Migrate Product images, thumbnails', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Migrate Product stocks', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Unlimited migration', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Community Support', 'litextension-data-migration-to-woocommerce' ); ?></li>
                         </ul>
                     </div>
                 </div>
                 <div class="block-center lit-block">
-                    <h3 class="block-header block-preminum">Buy Premium Migration</h3>
+                    <h3 class="block-header block-preminum"><?php esc_html_e( 'Buy Premium Migration', 'litextension-data-migration-to-woocommerce' ); ?></h3>
 
                     <div class="multicol block-ct">
-                        <p>Gain all Free version features including the following extra features with Premium Migration:</p>
+                        <p><?php esc_html_e( 'Gain all Free version features including the following extra features with Premium Migration:', 'litextension-data-migration-to-woocommerce' ); ?></p>
                         <ul>
-                            <li>Migrate Product attributes</li>
-                            <li>Migrate Product variations</li>
-                            <li>Migrate Grouped products</li>
-                            <li>Migrate Products Up Sell and Cross Sell</li>
-                            <li>Migrate Users</li>
-                            <li>Migrate Customers</li>
-                            <li>Migrate Orders</li>
+                            <li><?php esc_html_e( 'Migrate Product attributes', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Migrate Product variations', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Migrate Grouped products', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Migrate Products Up Sell and Cross Sell', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Migrate Users', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Migrate Customers', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Migrate Orders', 'litextension-data-migration-to-woocommerce' ); ?></li>
                         </ul>
                         <ul>
-                            <li>Migrate Ratings and reviews</li>
-                            <li>Migrate Discount coupons</li>
-                            <li>Migrate SEO meta data</li>
-                            <li>Migrate Tax classes</li>
-                            <li>Migrate SEO: redirects the source store URLs</li>
-                            <li>Unlimited migration</li>
-                            <li>High Priority Support</li>
+                            <li><?php esc_html_e( 'Migrate Ratings and reviews', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Migrate Discount coupons', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Migrate SEO meta data', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Migrate Tax classes', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Migrate SEO: redirects the source store URLs', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'Unlimited migration', 'litextension-data-migration-to-woocommerce' ); ?></li>
+                            <li><?php esc_html_e( 'High Priority Support', 'litextension-data-migration-to-woocommerce' ); ?></li>
                         </ul>
                         <br style="clear:both" />
-                        <p>You can buy Premium Migration before or after Free Migration. <a target="_blank" href="https://litextension.com/woocommerce-migration-tool.html" >Check details</a></p>
+                        <p>
+                            <?php esc_html_e( 'You can buy Premium Migration before or after Free Migration.', 'litextension-data-migration-to-woocommerce' ); ?>
+                            <a target="_blank" rel="noopener noreferrer" href="https://litextension.com/woocommerce-migration-tool.html"><?php esc_html_e( 'Check details', 'litextension-data-migration-to-woocommerce' ); ?></a>
+                        </p>
                     </div>
                 </div>
 
@@ -172,14 +200,17 @@
             </div>
 
             <div class="lit-footer lit-plugin position-m-block">
-                <a href="https://litextension.com/why-litextension.html" target="_blank">About Us</a>
-                <a href="https://litextension.com/faq/" target="_blank">FAQs</a>
-                <a href="https://blog.litextension.com/" target="_blank">Blog</a>
-                <a href="https://litextension.com/terms-conditions/" target="_blank">Terms and Conditions</a>
-                <a href="https://litextension.zendesk.com" target="_blank">Submit a Support Ticket</a>
+                <a href="https://litextension.com/why-litextension.html" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'About Us', 'litextension-data-migration-to-woocommerce' ); ?></a>
+                <a href="https://litextension.com/faq/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'FAQs', 'litextension-data-migration-to-woocommerce' ); ?></a>
+                <a href="https://blog.litextension.com/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Blog', 'litextension-data-migration-to-woocommerce' ); ?></a>
+                <a href="https://litextension.com/terms-conditions/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Terms and Conditions', 'litextension-data-migration-to-woocommerce' ); ?></a>
+                <a href="https://litextension.zendesk.com" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Submit a Support Ticket', 'litextension-data-migration-to-woocommerce' ); ?></a>
             </div>
+
             <div style="text-align: center; margin-top: 20px;">
-                <img src="<?php echo esc_url($_param['plugin_url']) ?>/assets/images/heart.svg" style="width: 12px" /> Find this plugin helpful? <a target="_blank" href="https://wordpress.org/support/plugin/litextension-data-migration-to-woocommerce/reviews/#new-post">Write us a review</a>
+                <img src="<?php echo esc_url( $_param['plugin_url'] . '/assets/images/heart.svg' ); ?>" alt="" style="width: 12px" />
+                <?php esc_html_e( 'Find this plugin helpful?', 'litextension-data-migration-to-woocommerce' ); ?>
+                <a target="_blank" rel="noopener noreferrer" href="https://wordpress.org/support/plugin/litextension-data-migration-to-woocommerce/reviews/#new-post"><?php esc_html_e( 'Write us a review', 'litextension-data-migration-to-woocommerce' ); ?></a>
             </div>
 
         </div>
